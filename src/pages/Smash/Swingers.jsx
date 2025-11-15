@@ -12,6 +12,7 @@ const Swingers = () => {
     const [tournamentErrorMessage, setTournamentErrorMessage] = useState('');
     const [numRounds, setNumRounds] = useState(0);
     const [tournamentName, setTournamentName] = useState('');
+    const [gameMode, setGameMode] = useState('bo5'); // 'bo3' or 'bo5'
     const [playerColors, setPlayerColors] = useState({});
     const [playerDbIds, setPlayerDbIds] = useState({});
 
@@ -50,6 +51,10 @@ const Swingers = () => {
 
     const getPartnerKey = (p1, p2) => {
         return [p1, p2].sort().join('-');
+    };
+
+    const sanitizeFirebaseKey = (key) => {
+        return key.replace(/[.#$[\]/]/g, '_');
     };
 
     // --- Round Generation Logic ---
@@ -208,10 +213,12 @@ const Swingers = () => {
         const newRounds = [...rounds];
         const match = newRounds[roundIdx][matchIdx];
         match[teamKey].score = score;
-
+        
+        const winningScore = gameMode === 'bo3' ? 2 : 3;
+        
         const otherTeamKey = teamKey === 'team1' ? 'team2' : 'team1';
-        if (score < 3) {
-            match[otherTeamKey].score = 3;
+        if (score < winningScore) {
+            match[otherTeamKey].score = winningScore;
         }
         setRounds(newRounds);
     };
@@ -312,17 +319,15 @@ const Swingers = () => {
                     if (team1Players.includes(p)) {
                         res.gamesWon += score1;
                         res.gamesLost += score2;
-                        if (team1Won) res.matchWins += 1;
-                        const diff = score1 - score2;
-                        res.opponents[team2.p1] = (res.opponents[team2.p1] || 0) + diff;
-                        res.opponents[team2.p2] = (res.opponents[team2.p2] || 0) + diff;
+                        if (team1Won) { res.matchWins += 1; }
+                        res.opponents[sanitizeFirebaseKey(team2.p1)] = (res.opponents[sanitizeFirebaseKey(team2.p1)] || 0) + (score1 - score2);
+                        res.opponents[sanitizeFirebaseKey(team2.p2)] = (res.opponents[sanitizeFirebaseKey(team2.p2)] || 0) + (score1 - score2);
                     } else {
                         res.gamesWon += score2;
                         res.gamesLost += score1;
-                        if (!team1Won) res.matchWins += 1;
-                        const diff = score2 - score1;
-                        res.opponents[team1.p1] = (res.opponents[team1.p1] || 0) + diff;
-                        res.opponents[team1.p2] = (res.opponents[team1.p2] || 0) + diff;
+                        if (!team1Won) { res.matchWins += 1; }
+                        res.opponents[sanitizeFirebaseKey(team1.p1)] = (res.opponents[sanitizeFirebaseKey(team1.p1)] || 0) + (score2 - score1);
+                        res.opponents[sanitizeFirebaseKey(team1.p2)] = (res.opponents[sanitizeFirebaseKey(team1.p2)] || 0) + (score2 - score1);
                     }
                 });
             });
@@ -334,7 +339,7 @@ const Swingers = () => {
             const resB = tempResults[b];
             if (resA.matchWins !== resB.matchWins) return resB.matchWins - resA.matchWins;
             if (resA.gamesWon !== resB.gamesWon) return resB.gamesWon - resA.gamesWon;
-            const directH2H = (resA.opponents[b] || 0) - (resB.opponents[a] || 0);
+            const directH2H = (resA.opponents[sanitizeFirebaseKey(b)] || 0) - (resB.opponents[sanitizeFirebaseKey(a)] || 0);
             if (directH2H !== 0) return directH2H > 0 ? -1 : 1;
             return a.localeCompare(b);
         });
@@ -653,6 +658,29 @@ const Swingers = () => {
                             {renderRoundRadios()}
                         </div>
                     </div>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-300 mb-2">Match Format</label>
+                        <div className="radio-group flex flex-wrap gap-2">
+                            <input
+                                type="radio"
+                                id="mode-bo3"
+                                name="gameMode"
+                                value="bo3"
+                                checked={gameMode === 'bo3'}
+                                onChange={() => setGameMode('bo3')}
+                            />
+                            <RadioInput htmlFor="mode-bo3" label="Best of 3" />
+                            <input
+                                type="radio"
+                                id="mode-bo5"
+                                name="gameMode"
+                                value="bo5"
+                                checked={gameMode === 'bo5'}
+                                onChange={() => setGameMode('bo5')}
+                            />
+                            <RadioInput htmlFor="mode-bo5" label="Best of 5" />
+                        </div>
+                    </div>
 
                     {errorMessage && <div className="text-red-400 text-sm font-medium">{errorMessage}</div>}
 
@@ -670,6 +698,7 @@ const Swingers = () => {
                                     const team1Won = match.team1.score !== null && match.team2.score !== null && match.team1.score > match.team2.score;
                                     const team2Won = match.team1.score !== null && match.team2.score !== null && match.team2.score > match.team1.score;
                                     const baseTeamClasses = 'rounded-md p-4 transition-all duration-300 ease-in-out border-2 border-transparent md:col-span-5 flex flex-col sm:items-center sm:justify-between sm:gap-4';
+                                    const scoresToShow = gameMode === 'bo3' ? [0, 1, 2] : [0, 1, 2, 3];
                                     const winningClasses = 'bg-blue-600/70 border-blue-500 shadow-[0_0_15px_rgba(66,153,225,0.4)] scale-[1.02]';
                                     const defaultClasses = 'bg-gray-800';
 
@@ -684,7 +713,7 @@ const Swingers = () => {
                                                     <p className="text-lg truncate" style={{ color: playerColors[match.team1.p2] }} title={match.team1.p2}>{match.team1.p2}</p>
                                                 </div>
                                                 <div className="flex space-x-2">
-                                                    {[0, 1, 2, 3].map(score => {
+                                                    {scoresToShow.map(score => {
                                                         const isSelected = match.team1.score === score;
                                                         return <button key={score} onClick={() => handleScoreChange(roundIdx, matchIdx, 'team1', score)} className={`py-2 px-4 font-semibold rounded-md transition-all duration-200 bg-gray-700 text-gray-200 border border-gray-600 min-w-[40px] hover:bg-gray-600 cursor-pointer ${isSelected ? 'score-selected' : ''}`}>{score}</button>
                                                     })}
@@ -697,7 +726,7 @@ const Swingers = () => {
                                                     <p className="text-lg truncate" style={{ color: playerColors[match.team2.p2] }} title={match.team2.p2}>{match.team2.p2}</p>
                                                 </div>
                                                 <div className="flex space-x-2">
-                                                    {[0, 1, 2, 3].map(score => {
+                                                    {scoresToShow.map(score => {
                                                         const isSelected = match.team2.score === score;
                                                         return <button key={score} onClick={() => handleScoreChange(roundIdx, matchIdx, 'team2', score)} className={`py-2 px-4 font-semibold rounded-md transition-all duration-200 bg-gray-700 text-gray-200 border border-gray-600 min-w-[40px] hover:bg-gray-600 cursor-pointer ${isSelected ? 'score-selected' : ''}`}>{score}</button>
                                                     })}

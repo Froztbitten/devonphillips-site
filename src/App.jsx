@@ -12,7 +12,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route index element={<Home />} />
-          <Route path="smash" element={<SmashHome />}>
+          <Route path="smash/*" element={<SmashHome />}>
             <Route index element={<></>} />
             <Route path="swingers-smash-tournament" element={<Swingers />} />
             <Route path="player-stats" element={<PlayerStats />} />

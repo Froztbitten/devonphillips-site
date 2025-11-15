@@ -1,4 +1,9 @@
-import { Link, Outlet, useLocation } from 'react-router-dom';
+import { Link, Route, Routes, useLocation } from 'react-router-dom';
+import Swingers from './Swingers';
+import PlayerStats from './PlayerStats';
+import TournamentHistory from './TournamentHistory';
+import CharacterRandomizer from './CharacterRandomizer';
+
 
 const SmashHome = () => {
   const games = [
@@ -16,6 +21,11 @@ const SmashHome = () => {
       name: 'Tournament History',
       description: 'Browse through the results of all previously played tournaments.',
       path: '/smash/tournament-history',
+    },
+    {
+      name: 'Character Randomizer',
+      description: 'Get a random character, with the ability to weight your favorites.',
+      path: '/smash/character-randomizer',
     },
     // Add more games here in the future
   ];
@@ -38,7 +48,12 @@ const SmashHome = () => {
           </div>
         </div>
       ) : (
-        <Outlet />
+        <Routes>
+          <Route path="swingers-smash-tournament" element={<Swingers />} />
+          <Route path="player-stats" element={<PlayerStats />} />
+          <Route path="tournament-history" element={<TournamentHistory />} />
+          <Route path="character-randomizer" element={<CharacterRandomizer />} />
+        </Routes>
       )}
     </main>
   );

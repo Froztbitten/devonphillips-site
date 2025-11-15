@@ -17,8 +17,8 @@ function Home() {
       <div className="mt-12 text-center">
         <h2 className="text-3xl font-bold mb-4">Projects</h2>
         <div className="flex flex-wrap justify-center gap-4">
-          <Link to="/smash/swingers-smash-tournament" className="text-lg border border-white rounded px-4 py-2 hover:bg-white hover:text-gray-900 transition-colors">
-            Swingers Smash Tournament
+          <Link to="/smash" className="text-lg border border-white rounded px-4 py-2 hover:bg-white hover:text-gray-900 transition-colors">
+            Smash Tools
           </Link>
           <a href="https://scapemate.net/" target="_blank" rel="noopener noreferrer" className="text-lg border border-white rounded px-4 py-2 hover:bg-white hover:text-gray-900 transition-colors">
             Old School Runescape App
