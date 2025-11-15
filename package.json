@@ -1,0 +1,19 @@
+{
+  "dependencies": {
+    "firebase": "^12.5.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.22.2"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.1.17",
+    "@vitejs/plugin-react": "^4.2.0",
+    "tailwindcss": "^4.1.17",
+    "vite": "^7.2.2"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  }
+}

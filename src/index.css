@@ -1,0 +1,10 @@
+@import "tailwindcss";
+
+/* Navigation slider underline */
+.nav-slider {
+  position: absolute;
+  bottom: 0;
+  height: 2px;
+  background-color: #60a5fa; /* Tailwind's blue-400 */
+  transition: left 0.3s ease-in-out, width 0.3s ease-in-out;
+}
